@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+	Copied from https://github.com/android/platform_packages_apps_settings/blob/master/res/xml/tether_prefs.xml
+ -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="usb_tether_settings"
+        android:title="@string/usb_tethering_button_text"
+        android:persistent="false" />
+
+</PreferenceScreen>
