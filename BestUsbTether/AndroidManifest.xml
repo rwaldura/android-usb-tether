@@ -20,7 +20,7 @@
         
         <activity
             android:name="UsbTetherSettingsActivity"
-            android:label="@string/tether_settings_title_all">
+            android:label="@string/tether_settings_title_usb">
             
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -84,23 +84,25 @@ public class UsbTetherSettings extends PreferenceFragment
         
         if (ucm.hasAllRequiredPermissions(getActivity().getApplicationContext()))
         {
-            Log.i(TAG, "all required permissions obtained, ready to go");
+            Log.i(TAG, "all required permissions obtained, good to go");
         }
         else
         {
-            Log.e(TAG, "don't have required permissions, will fail");
+            Log.e(TAG, "do not have required permissions, will fail");
             // TODO signal this somehow 
         }
     }
 
     private void setUsbTethering(boolean enabled)
-    {
-        mUsbTether.setChecked(false);
-        
-        int err = -1;        
+    {        
+        Integer summary = R.string.usb_tethering_errored_subtext;        
         try
         {
-            err = ucm.setUsbTethering(enabled);
+            if (ucm.setUsbTethering(enabled) == UsbConnectivityManager.TETHER_ERROR_NO_ERROR)
+            {
+                mUsbTether.setChecked(enabled);
+                summary = null;
+            }                
         }
         catch (NoSuchMethodException e)
         {
@@ -115,17 +117,22 @@ public class UsbTetherSettings extends PreferenceFragment
             Log.e(TAG, "setUsbTethering failed", e);
         }
         catch (InvocationTargetException e)
-        {
-            Log.e(TAG, "setUsbTethering failed", e.getTargetException());
+        {            
+            Log.e(TAG, "setUsbTethering failed", e.getTargetException());                
+
+            if (e.getTargetException() instanceof SecurityException)
+            {
+                summary = R.string.usb_tethering_errored_noperm;
+            }
         }
         
-        if (err != UsbConnectivityManager.TETHER_ERROR_NO_ERROR)
+        if (summary != null)
         {
-            mUsbTether.setSummary(R.string.usb_tethering_errored_subtext);
+            mUsbTether.setSummary(summary);            
         }
         else
         {
-            mUsbTether.setSummary("");
+            mUsbTether.setSummary("");                        
         }
     }
 
@@ -135,15 +142,8 @@ public class UsbTetherSettings extends PreferenceFragment
         if (preference == mUsbTether)
         {
             boolean newState = mUsbTether.isChecked();
-            if (newState)
-            {
-                //startProvisioningIfNecessary(USB_TETHERING);
-                // TODO I don't know how to do this
-            }
-            else
-            {
-                setUsbTethering(newState);
-            }
+            setUsbTethering(newState);
+            Log.i(TAG, "successsfully set usb tethering to " + newState);
         }
         
         return super.onPreferenceTreeClick(screen, preference);

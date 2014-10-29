@@ -11,14 +11,6 @@
      <!-- Tethering controls, item title to go into the tethering settings -->
 	<!-- Tethering controls, item title to go into the tethering settings when only USB tethering is available [CHAR LIMIT=25]-->
 	<string name="tether_settings_title_usb">USB tethering</string>
-	<!-- Tethering controls, item title to go into the tethering settings when only Wifi tethering is available [CHAR LIMIT=25]-->
-	<string name="tether_settings_title_wifi">Portable hotspot</string>
-	<!-- Tethering controls, item title to go into the tethering settings when only Bluetooth tethering is available [CHAR LIMIT=25]-->
-	<string name="tether_settings_title_bluetooth">Bluetooth tethering</string>
-	<!-- Tethering controls, item title to go into the tethering settings when USB and Bluetooth tethering are available [CHAR LIMIT=25]-->
-	<string name="tether_settings_title_usb_bluetooth">Tethering</string>
-	<!-- Tethering controls, item title to go into the tethering settings when USB, Bluetooth and Wifi tethering are available [CHAR LIMIT=25]-->
-	<string name="tether_settings_title_all">Tethering &amp; portable hotspot</string>
     
     <string name="usb_title">USB</string>
     <string name="usb_tethering_button_text">USB tethering</string>
@@ -32,6 +24,8 @@
     <string name="usb_tethering_unavailable_subtext">USB not connected</string>
     <!-- USB errored subtext - shown when USB is broken for some reason -->
     <string name="usb_tethering_errored_subtext">USB tethering error</string>
+    <!-- USB errored subtext - shown when USB is broken for known reason -->
+    <string name="usb_tethering_errored_noperm">USB tethering not permitted</string>
     
     <string name="action_settings">Settings</string>
 
