@@ -142,10 +142,14 @@ public class UsbTetherSettings extends PreferenceFragment
             }
         }
 
-        // on tethering success, no need to change the subtext: we will receive an event that tells us 
         if (subtext != null)
         {
             mUsbTether.setSummary(subtext);            
+        }
+        else
+        {
+            // success; tethering can sometime take a while
+            mUsbTether.setSummary("...");
         }
     }
 
