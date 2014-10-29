@@ -3,17 +3,17 @@ package com.waldura.bestusbtether;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
-import com.waldura.bestusbtether.R;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
 
@@ -25,9 +25,10 @@ import android.util.Log;
  */
 public class UsbTetherSettings extends PreferenceFragment
 {
-    static final String TAG = "bestusbtether";
+    private static final String TAG = "UsbTetherSettings";
 
     private static final String USB_TETHER_SETTINGS = "usb_tether_settings";
+    private static final String USB_TETHER_AUTOSTART = "usb_tether_auto";
     
     private UsbConnectivityManager ucm;
 
@@ -38,6 +39,7 @@ public class UsbTetherSettings extends PreferenceFragment
     private TetherChangeReceiver mTetherChangeReceiver;
 
     private CheckBoxPreference mUsbTether;
+    private CheckBoxPreference mUsbAutoStart;
 
     /**
      * Called when activity is first initialized.
@@ -46,15 +48,45 @@ public class UsbTetherSettings extends PreferenceFragment
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        
         addPreferencesFromResource(R.xml.tether_prefs);
         
-        ucm = new UsbConnectivityManager(getActivity().getApplicationContext());
+        // initialize preference default values
+        PreferenceManager.setDefaultValues(getActivity().getApplicationContext(), R.xml.tether_prefs, false);
 
+        mUsbTether = (CheckBoxPreference) findPreference(USB_TETHER_SETTINGS);
+        mUsbAutoStart = (CheckBoxPreference) findPreference(USB_TETHER_AUTOSTART);        
+
+        // initialize our wrapper
+        ucm = new UsbConnectivityManager(getActivity().getApplicationContext());
+        if (ucm.hasAllTetheringPermissions(getActivity().getApplicationContext()))
+        {
+            Log.i(TAG, "all required permissions obtained, good to go");
+        }
+        else
+        {
+            Log.e(TAG, "do not have required permissions, will fail");
+            // TODO signal this somehow 
+        }
+
+        if (!isUsbAvailable())
+        {
+            // there's nothing to do here; this device has no USB capability
+            // getPreferenceScreen().removePreference(mUsbTether);
+            mUsbTether.setEnabled(false);
+            mUsbTether.setSummary(R.string.usb_tethering_nousbavailable_subtext);
+            Log.e(TAG, "no USB available");             
+        }
+    }
+
+    private boolean isUsbAvailable()
+    {
         boolean usbAvailable = false;
+        
         try
         {
             mUsbRegexs = ucm.getTetherableUsbRegexs();
-            usbAvailable = mUsbRegexs.length != 0;
+            usbAvailable = mUsbRegexs.length > 0;
         }
         catch (NoSuchMethodException e)
         {
@@ -72,36 +104,20 @@ public class UsbTetherSettings extends PreferenceFragment
         {
             Log.w(TAG, "getTetherableUsbRegexs failed", e.getTargetException());
         }
-
-        if (!usbAvailable)
-        {
-            // there's nothing to do here; this device has no USB tethering capability
-            // getPreferenceScreen().removePreference(mUsbTether);
-            // TODO signal this somehow 
-        }
         
-        mUsbTether = (CheckBoxPreference) findPreference(USB_TETHER_SETTINGS);
-        
-        if (ucm.hasAllRequiredPermissions(getActivity().getApplicationContext()))
-        {
-            Log.i(TAG, "all required permissions obtained, good to go");
-        }
-        else
-        {
-            Log.e(TAG, "do not have required permissions, will fail");
-            // TODO signal this somehow 
-        }
+        return usbAvailable;
     }
 
     private void setUsbTethering(boolean enabled)
     {        
-        Integer summary = R.string.usb_tethering_errored_subtext;        
+        Integer subtext = R.string.usb_tethering_errored_subtext;        
         try
         {
             if (ucm.setUsbTethering(enabled) == UsbConnectivityManager.TETHER_ERROR_NO_ERROR)
             {
                 mUsbTether.setChecked(enabled);
-                summary = null;
+                subtext = null;
+                Log.i(TAG, "USB tethering set to " + enabled);
             }                
         }
         catch (NoSuchMethodException e)
@@ -122,17 +138,14 @@ public class UsbTetherSettings extends PreferenceFragment
 
             if (e.getTargetException() instanceof SecurityException)
             {
-                summary = R.string.usb_tethering_errored_noperm;
+                subtext = R.string.usb_tethering_errored_noperm;
             }
         }
-        
-        if (summary != null)
+
+        // on tethering success, no need to change the subtext: we will receive an event that tells us 
+        if (subtext != null)
         {
-            mUsbTether.setSummary(summary);            
-        }
-        else
-        {
-            mUsbTether.setSummary("");                        
+            mUsbTether.setSummary(subtext);            
         }
     }
 
@@ -141,9 +154,12 @@ public class UsbTetherSettings extends PreferenceFragment
     {
         if (preference == mUsbTether)
         {
-            boolean newState = mUsbTether.isChecked();
-            setUsbTethering(newState);
-            Log.i(TAG, "successsfully set usb tethering to " + newState);
+            Log.i(TAG, "user changed USB tethering to " + mUsbTether.isChecked());
+            setUsbTethering(mUsbTether.isChecked());
+        }
+        else if (preference == mUsbAutoStart)
+        {
+            Log.d(TAG, "user changed auto start to " + mUsbAutoStart.isChecked());
         }
         
         return super.onPreferenceTreeClick(screen, preference);
@@ -154,6 +170,8 @@ public class UsbTetherSettings extends PreferenceFragment
         @Override
         public void onReceive(Context content, Intent intent)
         {
+            Log.d(TAG, "received new intent " + intent.getAction());
+
             if (intent.getAction().equals(UsbConnectivityManager.ACTION_TETHER_STATE_CHANGED))
             {
                 // TODO - this should understand the interface types
@@ -177,8 +195,19 @@ public class UsbTetherSettings extends PreferenceFragment
                 updateState(null, null, null);
             }
             else if (intent.getAction().equals(UsbConnectivityManager.ACTION_USB_STATE))
-            {
-                mUsbConnected = intent.getBooleanExtra(UsbConnectivityManager.USB_CONNECTED, false);
+            {                
+                boolean usbConnected = intent.getBooleanExtra(UsbConnectivityManager.USB_CONNECTED, false);                
+                Log.i(TAG, "intent " + intent.getAction() + " usbConnect is " + usbConnected);
+                
+                if (usbConnected // no point in auto-stopping USB tethering: it already does
+                        && !mUsbTether.isChecked() // not already started
+                        && mUsbAutoStart.isChecked())
+                {
+                    Log.w(TAG, "auto-starting USB tethering");
+                    setUsbTethering(true);
+                }
+                
+                mUsbConnected = usbConnected;
                 updateState(null, null, null);
             }
         }
@@ -212,15 +241,16 @@ public class UsbTetherSettings extends PreferenceFragment
         if (intent != null)
             mTetherChangeReceiver.onReceive(getActivity(), intent);
 
+        // init the UI with actual, current values
         updateState(null, null, null);
     }
 
     @Override
     public void onStop()
     {
-        super.onStop();
         getActivity().unregisterReceiver(mTetherChangeReceiver);
-        mTetherChangeReceiver = null;
+        mTetherChangeReceiver = null;        
+        super.onStop();
     }
 
     private void updateState(String[] available, String[] tethered, String[] errored)

@@ -2,6 +2,7 @@ package com.waldura.bestusbtether;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import android.content.Context;
 import android.content.Intent;
@@ -45,7 +46,7 @@ public class UsbConnectivityManager
     public static final String USB_CONNECTED = "connected";
     public static final String USB_CONFIGURED = "configured";
     
-    private static final String TAG = UsbTetherSettings.TAG;
+    private static final String TAG = "UsbConnectivityManager";
     
     private final ConnectivityManager cm;
     private boolean isUsbTetheringActive = false;
@@ -60,7 +61,7 @@ public class UsbConnectivityManager
         this.cm = cm;
     }
 
-    public boolean hasAllRequiredPermissions(Context ctx)
+    public boolean hasAllTetheringPermissions(Context ctx)
     {
         return hasPermission(ctx, "android.permission.ACCESS_NETWORK_STATE") 
                 && hasPermission(ctx, "android.permission.CHANGE_NETWORK_STATE") 
@@ -104,7 +105,7 @@ public class UsbConnectivityManager
         Method m = cm.getClass().getMethod(name);
         String[] result = (String[]) m.invoke(cm);
 
-        Log.d(TAG, name + " returns " + result);
+        Log.d(TAG, name + " returns " + Arrays.asList(result));
         return result;
     }
 

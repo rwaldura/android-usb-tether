@@ -8,25 +8,37 @@
 	https://github.com/android/platform_packages_apps_settings/blob/master/res/values/strings.xml#L2319
     -->
     
-     <!-- Tethering controls, item title to go into the tethering settings -->
 	<!-- Tethering controls, item title to go into the tethering settings when only USB tethering is available [CHAR LIMIT=25]-->
-	<string name="tether_settings_title_usb">USB tethering</string>
+	<string name="tether_settings_title_usb">USB Tethering</string>
     
     <string name="usb_title">USB</string>
+    
     <string name="usb_tethering_button_text">USB tethering</string>
+    
     <!-- USB available subtext - shown when USB is connected but not currently being tethered -->
     <string name="usb_tethering_available_subtext">USB connected, check to tether</string>
-    <!-- USB tethered subtext - shown when USB is connected and being tethered -->
-    <string name="usb_tethering_active_subtext">Tethered</string>
-    <!-- USB storage subtext - shown when tethering is disabled because USB storage is active -->
-    <string name="usb_tethering_storage_active_subtext">Can\'t tether when USB storage is in use</string>
+    
     <!-- USB unavailable subtext - shown when USB is not connected -->
     <string name="usb_tethering_unavailable_subtext">USB not connected</string>
+    
+    <!-- USB tethered subtext - shown when USB is connected and being tethered -->
+    <string name="usb_tethering_active_subtext">Tethered</string>
+    
+    <!-- USB storage subtext - shown when tethering is disabled because USB storage is active -->
+    <string name="usb_tethering_storage_active_subtext">Can\'t tether when USB storage is in use</string>
+    
+    <!-- USB unavailable subtext - shown when no USB is available -->
+    <string name="usb_tethering_nousbavailable_subtext">USB not available</string>
+    
     <!-- USB errored subtext - shown when USB is broken for some reason -->
     <string name="usb_tethering_errored_subtext">USB tethering error</string>
+    
     <!-- USB errored subtext - shown when USB is broken for known reason -->
-    <string name="usb_tethering_errored_noperm">USB tethering not permitted</string>
+    <string name="usb_tethering_errored_noperm">USB tethering not permitted (not installed as system app)</string>
     
     <string name="action_settings">Settings</string>
-
+    
+    <string name="usb_tethering_auto_title">Auto-start tethering</string>
+    <string name="usb_tethering_auto_summary">Tethering starts immediately when USB connected. Not compatible with file sharing</string>
+    
 </resources>
